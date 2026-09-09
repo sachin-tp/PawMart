@@ -1,15 +1,7 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import psycopg
+
 from app.config.settings import settings
 
-engine = create_engine(settings.DATABASE_URL)
 
-SessiionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_db():
-    db = SessiionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
+def get_db_connection():
+    return psycopg.connect(settings.DATABASE_URL)
