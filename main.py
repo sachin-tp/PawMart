@@ -1,7 +1,11 @@
 from fastapi import FastAPI
+from app.routes.routes import router
 
-app = FastAPI()
+
+app = FastAPI(title="PawMart API")
+app.include_router(router)
+
 
 @app.get("/")
 def home():
-    return {"message": "Welcome to the PawMart application!"}
+    return {"message": "Welcome to PawMart API"}
