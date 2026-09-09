@@ -1,22 +1,64 @@
-from sqlalchemy.orm import Session
-from app.models.models import Pet
+from app.database.connection import get_db_connection
 from app.schemas.schemas import PetCreate
 
-# Create Operation
-def create_pet(db: Session, pet_data: PetCreate) -> Pet:
-    new_pet = Pet(
-        name=pet_data.name,
-        species=pet_data.species,
-        breed=pet_data.breed,
-        age=pet_data.age,
-        price=pet_data.price,
-        is_available=pet_data.is_available
-    )
-    db.add(new_pet)
-    db.commit()
-    db.refresh(new_pet)
-    return new_pet
 
-# Read Operation
-def get_pets(db: Session) -> list[Pet]:
-    return db.query(Pet).all()
+def create_pet(pet_data: PetCreate) -> dict:
+    query = """
+        INSERT INTO pets
+        (name, species, breed, age, price, is_available)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        RETURNING id, name, species, breed, age, price, is_available;
+    """
+
+    with get_db_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                query,
+                (
+                    pet_data.name,
+                    pet_data.species,
+                    pet_data.breed,
+                    pet_data.age,
+                    pet_data.price,
+                    pet_data.is_available,
+                ),
+            )
+
+            row = cursor.fetchone()
+
+            return {
+                "id": row[0],
+                "name": row[1],
+                "species": row[2],
+                "breed": row[3],
+                "age": row[4],
+                "price": row[5],
+                "is_available": row[6],
+            }
+
+
+def get_pets() -> list[dict]:
+    query = """
+        SELECT id, name, species, breed, age, price, is_available
+        FROM pets
+        ORDER BY id;
+    """
+
+    with get_db_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+
+            rows = cursor.fetchall()
+
+            return [
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "species": row[2],
+                    "breed": row[3],
+                    "age": row[4],
+                    "price": row[5],
+                    "is_available": row[6],
+                }
+                for row in rows
+            ]
