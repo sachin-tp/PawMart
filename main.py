@@ -1,11 +1,7 @@
-from fastapi import FastAPI
-from app.routes.routes import router
+from app.database.connection import get_connection
 
+connection = get_connection()
 
-app = FastAPI(title="PawMart API")
-app.include_router(router)
+print("Database connection established successfully!")
 
-
-@app.get("/")
-def home():
-    return {"message": "Welcome to PawMart API"}
+connection.close()
